@@ -37,6 +37,8 @@ int main(int argc, char* argv[]) {
     try {
         if (match_pattern(input_line, pattern)) {
             return 0;
+        } else if (pattern == "\\d") {
+            return input_line.find_first_of("123456890") != std::string::npos;
         } else {
             return 1;
         }
