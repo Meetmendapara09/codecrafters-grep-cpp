@@ -3,23 +3,27 @@
 #include <cctype>
 #include <stdexcept>
 
-// Function to check if a character is a digit
+// Function prototypes
+bool match_digit(char c);
+bool match_alphanumeric(char c);
+bool match_set(char c, const std::string& set, bool negate);
+bool match_group(const std::string& regex, const std::string& text);
+bool match_here(const std::string& regex, const std::string& text);
+bool match_one_or_more(const std::string& regex, const std::string& text);
+
 bool match_digit(char c) {
     return std::isdigit(c);
 }
 
-// Function to check if a character is alphanumeric
 bool match_alphanumeric(char c) {
     return std::isalnum(c);
 }
 
-// Function to check if a character matches a set of characters
 bool match_set(char c, const std::string& set, bool negate) {
     bool found = set.find(c) != std::string::npos;
     return negate ? !found : found;
 }
 
-// Function to match character classes in patterns
 bool match_group(const std::string& regex, const std::string& text) {
     if (text.empty()) return false;
 
@@ -32,6 +36,16 @@ bool match_group(const std::string& regex, const std::string& text) {
     size_t start = negate ? 1 : 0;
     if (match_set(text[0], regex.substr(start, close_bracket_pos - start), negate)) {
         return match_here(regex.substr(close_bracket_pos + 1), text.substr(1));
+    }
+    return false;
+}
+
+bool match_one_or_more(const std::string& regex, const std::string& text) {
+    // Match the pattern one or more times
+    for (size_t i = 1; i <= text.size(); ++i) {
+        if (match_here(regex, text.substr(i))) {
+            return true;
+        }
     }
     return false;
 }
@@ -75,25 +89,11 @@ bool match_here(const std::string& regex, const std::string& text) {
     }
     return false;
 }
-// Function to match one or more occurrences of a pattern
-bool match_one_or_more(const std::string& regex, const std::string& text) {
-    // Match the pattern one or more times
-    for (size_t i = 1; i <= text.size(); ++i) {
-        if (match_here(regex, text.substr(i))) {
-            return true;
-        }
-    }
-    return false;
-}
 
-// Recursive function to match regex against text
-
-// Function to match a pattern against the input line
 bool match_pattern(const std::string& input_line, const std::string& pattern) {
     return match_here(pattern, input_line);
 }
 
-// Main function to handle input and invoke pattern matching
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         std::cerr << "Expected two arguments" << std::endl;
