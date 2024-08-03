@@ -1,9 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cctype>
-#include <stdexcept>
 
-// Function to check if a character matches a character class
 bool match_char_class(char ch, const std::string& char_class) {
     if (char_class == "\\d") {
         return std::isdigit(ch);
@@ -22,7 +20,6 @@ bool match_char_class(char ch, const std::string& char_class) {
     return false;
 }
 
-// Function to match the input line against the pattern
 bool match_pattern(const std::string& input_line, const std::string& pattern) {
     size_t input_len = input_line.size();
     size_t pattern_len = pattern.size();
