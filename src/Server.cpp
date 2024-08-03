@@ -36,18 +36,6 @@ bool match_group(const std::string& regex, const std::string& text) {
     return false;
 }
 
-// Function to match one or more occurrences of a pattern
-bool match_one_or_more(const std::string& regex, const std::string& text) {
-    // Match the pattern one or more times
-    for (size_t i = 1; i <= text.size(); ++i) {
-        if (match_here(regex, text.substr(i))) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Recursive function to match regex against text
 bool match_here(const std::string& regex, const std::string& text) {
     if (regex.empty()) return true;
 
@@ -87,6 +75,18 @@ bool match_here(const std::string& regex, const std::string& text) {
     }
     return false;
 }
+// Function to match one or more occurrences of a pattern
+bool match_one_or_more(const std::string& regex, const std::string& text) {
+    // Match the pattern one or more times
+    for (size_t i = 1; i <= text.size(); ++i) {
+        if (match_here(regex, text.substr(i))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Recursive function to match regex against text
 
 // Function to match a pattern against the input line
 bool match_pattern(const std::string& input_line, const std::string& pattern) {
