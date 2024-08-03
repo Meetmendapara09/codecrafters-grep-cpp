@@ -2,21 +2,21 @@
 #include <string>
 #include <stack>
 
-bool matchdigit(const std::string& input_line){
+bool matchdigit(const std::string& input_line) {
     for (char c : input_line) {
         if (std::isdigit(c)) return true;
     }
     return false;
 }
 
-bool matchalphanumeric(const std::string& input_line){
+bool matchalphanumeric(const std::string& input_line) {
     for (char c : input_line) {
         if (std::isalnum(c)) return true;
     }
     return false;
 }
 
-bool positiveMatchGroup(const std::string& input_line, const std::string& pattern, int start, int end){
+bool positiveMatchGroup(const std::string& input_line, const std::string& pattern, int start, int end) {
     std::stack<char> s;
     std::stack<std::pair<char, char>> s_pair;
     if (end >= pattern.size()) end = pattern.size();
@@ -48,7 +48,7 @@ bool positiveMatchGroup(const std::string& input_line, const std::string& patter
     return false;
 }
 
-bool negativeMatchGroup(const std::string& input_line, const std::string& pattern, int start, int end){
+bool negativeMatchGroup(const std::string& input_line, const std::string& pattern, int start, int end) {
     std::stack<char> s;
     std::stack<std::pair<char, char>> s_pair;
     if (end >= pattern.length()) end = pattern.length();
@@ -80,11 +80,11 @@ bool negativeMatchGroup(const std::string& input_line, const std::string& patter
     return true;
 }
 
-bool match(const std::string& input_line, const std::string& pattern){
+bool match(const std::string& input_line, const std::string& pattern) {
     int i = 0;
     bool hasDollar = (pattern.back() == '$');
     int patternSize = hasDollar ? pattern.size() - 1 : pattern.size();
-    
+
     while (i <= input_line.size() - patternSize) {
         int j = 0;
         bool start = false;
@@ -98,11 +98,33 @@ bool match(const std::string& input_line, const std::string& pattern){
                 j++;
                 if (j < patternSize) {
                     if (pattern[j] == 'd') {
-                        if (!isdigit(input_line[temp])) break;
-                        else temp++;
+                        int digit_count = 0;
+                        while (j < patternSize && pattern[j] == 'd') {
+                            digit_count++;
+                            j++;
+                        }
+                        if (digit_count > 0) {
+                            int match_count = 0;
+                            while (temp < input_line.size() && std::isdigit(input_line[temp])) {
+                                match_count++;
+                                temp++;
+                            }
+                            if (match_count != digit_count) break;
+                        }
                     } else if (pattern[j] == 'w') {
-                        if (!isalnum(input_line[temp])) break;
-                        else temp++;
+                        int word_count = 0;
+                        while (j < patternSize && pattern[j] == 'w') {
+                            word_count++;
+                            j++;
+                        }
+                        if (word_count > 0) {
+                            int match_count = 0;
+                            while (temp < input_line.size() && std::isalnum(input_line[temp])) {
+                                match_count++;
+                                temp++;
+                            }
+                            if (match_count != word_count) break;
+                        }
                     } else if (pattern[j] == '[') {
                         int start = j;
                         while (j < patternSize && pattern[j] != ']') j++;
@@ -132,7 +154,7 @@ bool match_pattern(const std::string& input_line, const std::string& pattern) {
     if (pattern.length() == 1) {
         return input_line.find(pattern) != std::string::npos;
     }
-    else if (pattern[0] == '\\' && pattern.length() == 2) {
+    else if (pattern[0] == '\\' && pattern.length() > 1) {
         switch (pattern[1]) {
         case 'd':
             return matchdigit(input_line);
@@ -168,10 +190,10 @@ int main(int argc, char* argv[]) {
         std::cerr << "Expected first argument to be '-E'" << std::endl;
         return 1;
     }
-    
+
     std::string input_line;
     std::getline(std::cin, input_line);
-    
+
     try {
         if (match_pattern(input_line, pattern)) {
             return 0;
