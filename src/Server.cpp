@@ -93,7 +93,6 @@ bool match(const std::string& input_line, const std::string& pattern){
     bool startAnchor = false;
     bool endAnchor = false;
     if(pattern[0] == '^'){
-            startWildcard = true;
             startAnchor = true;
         } 
     if(pattern[pattern.size()-1] == '$'){
@@ -145,14 +144,6 @@ if(input_line.size() < pattern.size()-1) return false;
                             return positiveMatchGroup(input_line,pattern,start,j+1);
                         }
                     }
-                    
-                }
-                else{
-                    break;
-                }
-            }                        }
-                    }
-                    
                 }
                 else{
                     break;
