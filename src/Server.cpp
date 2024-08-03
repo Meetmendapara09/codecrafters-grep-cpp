@@ -1,47 +1,50 @@
 #include <iostream>
 #include <string>
-#include <cctype>  // For std::isalnum
+#include <cctype>
+#include <sstream>
 
-bool match_pattern(const std::string& input_line, const std::string& pattern) {
-    if (pattern == "\\w") {
-        // Check for any alphanumeric character or underscore
-        for (char ch : input_line) {
-            if (std::isalnum(ch) || ch == '_') {
-                return true;
-            }
-        }
-        return false;
-    } else if (pattern == "\\d") {
-        // Handle digit pattern
-        return input_line.find_first_of("0123456789") != std::string::npos;
-    } else if (pattern.length() > 2 && pattern[0] == '[' && pattern.back() == ']') {
-        // Handle positive and negative character groups
-        std::string chars_to_match = pattern.substr(1, pattern.length() - 2); // Remove the square brackets
-        
+// Function to match a single character against a class pattern
+bool match_char_class(char ch, const std::string& char_class) {
+    if (char_class == "\\d") {
+        return std::isdigit(ch);
+    } else if (char_class == "\\w") {
+        return std::isalnum(ch) || ch == '_';
+    } else if (char_class.length() > 2 && char_class[0] == '[' && char_class.back() == ']') {
+        std::string chars_to_match = char_class.substr(1, char_class.length() - 2);
         if (!chars_to_match.empty() && chars_to_match[0] == '^') {
-            // Negative character group
-            chars_to_match.erase(0, 1); // Remove the '^' from the beginning
-            for (char ch : input_line) {
-                if (chars_to_match.find(ch) == std::string::npos) {
-                    return true; // Found a character not in the negative group
-                }
-            }
-            return false;
+            chars_to_match.erase(0, 1);
+            return chars_to_match.find(ch) == std::string::npos;
         } else {
-            // Positive character group
-            for (char ch : input_line) {
-                if (chars_to_match.find(ch) != std::string::npos) {
-                    return true;
-                }
-            }
-            return false;
+            return chars_to_match.find(ch) != std::string::npos;
         }
-    } else if (pattern.length() == 1) {
-        // Handle single-character patterns
-        return input_line.find(pattern) != std::string::npos;
-    } else {
-        throw std::runtime_error("Unhandled pattern " + pattern);
     }
+    return false;
+}
+
+// Function to match the input line against a pattern
+bool match_pattern(const std::string& input_line, const std::string& pattern) {
+    std::istringstream pattern_stream(pattern);
+    std::string component;
+    size_t pos = 0;
+
+    while (pattern_stream >> component) {
+        if (component == "\\d" || component == "\\w" || 
+            (component.length() > 2 && component[0] == '[' && component.back() == ']')) {
+            // Match character class
+            if (pos >= input_line.size() || !match_char_class(input_line[pos], component)) {
+                return false;
+            }
+            ++pos;
+        } else {
+            // Match literal string
+            if (input_line.substr(pos, component.length()) != component) {
+                return false;
+            }
+            pos += component.length();
+        }
+    }
+
+    return pos == input_line.size();
 }
 
 int main(int argc, char* argv[]) {
@@ -64,7 +67,7 @@ int main(int argc, char* argv[]) {
 
     std::string input_line;
     std::getline(std::cin, input_line);
-    
+
     try {
         if (match_pattern(input_line, pattern)) {
             return 0;
