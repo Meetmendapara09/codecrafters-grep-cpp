@@ -26,9 +26,9 @@ bool match_pattern(const std::string& input_line, const std::string& pattern) {
     std::istringstream pattern_stream(pattern);
     std::string component;
     size_t pos = 0;
-
+    
     while (pattern_stream >> component) {
-        if (component == "\\d" || component == "\\w" || 
+        if (component == "\\d" || component == "\\w" ||
             (component.length() > 2 && component[0] == '[' && component.back() == ']')) {
             // Match character class
             if (pos >= input_line.size() || !match_char_class(input_line[pos], component)) {
@@ -37,13 +37,15 @@ bool match_pattern(const std::string& input_line, const std::string& pattern) {
             ++pos;
         } else {
             // Match literal string
-            if (input_line.substr(pos, component.length()) != component) {
+            size_t match_length = component.length();
+            if (input_line.substr(pos, match_length) != component) {
                 return false;
             }
-            pos += component.length();
+            pos += match_length;
         }
     }
-
+    
+    // Ensure the whole input line was matched
     return pos == input_line.size();
 }
 
