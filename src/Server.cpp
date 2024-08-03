@@ -4,23 +4,25 @@
 #include <cctype>
 #include <stdexcept>
 
+using namespace std;
+
 // Helper function to check for digits in the input line using regex
-bool matchdigit(const std::string& input_line) {
-    return std::regex_search(input_line, std::regex("\\d"));
+bool matchdigit(const string& input_line) {
+    return regex_search(input_line, regex("\\d"));
 }
 
 // Helper function to check for alphanumeric characters in the input line using regex
-bool matchalphanumeric(const std::string& input_line) {
-    return std::regex_search(input_line, std::regex("\\w"));
+bool matchalphanumeric(const string& input_line) {
+    return regex_search(input_line, regex("\\w"));
 }
 
 // Helper function to match negative character groups (e.g., [^abc])
-bool negativeMatchGroup(const std::string& input_line, const std::string& pattern, int start, int end) {
+bool negativeMatchGroup(const string& input_line, const string& pattern, int start, int end) {
     // Extract characters from the pattern
-    std::string chars = pattern.substr(start + 1, end - start - 2);
+    string chars = pattern.substr(start + 1, end - start - 2);
     // Check if any of these characters are present in the input line
     for (char ch : chars) {
-        if (input_line.find(ch) != std::string::npos) {
+        if (input_line.find(ch) != string::npos) {
             return false; // Found a character that should be excluded
         }
     }
@@ -28,12 +30,12 @@ bool negativeMatchGroup(const std::string& input_line, const std::string& patter
 }
 
 // Helper function to match positive character groups (e.g., [abc])
-bool positiveMatchGroup(const std::string& input_line, const std::string& pattern, int start, int end) {
+bool positiveMatchGroup(const string& input_line, const string& pattern, int start, int end) {
     // Extract characters from the pattern
-    std::string chars = pattern.substr(start + 1, end - start - 2);
+    string chars = pattern.substr(start + 1, end - start - 2);
     // Check if any of these characters are present in the input line
     for (char ch : chars) {
-        if (input_line.find(ch) != std::string::npos) {
+        if (input_line.find(ch) != string::npos) {
             return true; // Found a character that is included
         }
     }
@@ -41,11 +43,11 @@ bool positiveMatchGroup(const std::string& input_line, const std::string& patter
 }
 
 // Match function to handle various patterns including anchors, quantifiers, and escape sequences
-bool match(const std::string& input_line, const std::string& pattern) {
+bool match(const string& input_line, const string& pattern) {
     int i = 0;
     bool startAnchor = (pattern[0] == '^'); // Check if pattern starts with '^' for start of string anchor
     bool endAnchor = (pattern[pattern.size() - 1] == '$'); // Check if pattern ends with '$' for end of string anchor
-    std::string adjustedPattern = pattern;
+    string adjustedPattern = pattern;
     
     // Remove anchors from pattern for easier processing
     if (startAnchor) adjustedPattern = pattern.substr(1);
@@ -63,10 +65,10 @@ bool match(const std::string& input_line, const std::string& pattern) {
                 j++;
                 if (j < adjustedPattern.size()) {
                     if (adjustedPattern[j] == 'd') {
-                        if (!std::isdigit(input_line[temp])) break;
+                        if (!isdigit(input_line[temp])) break;
                         temp++;
                     } else if (adjustedPattern[j] == 'w') {
-                        if (!std::isalnum(input_line[temp])) break;
+                        if (!isalnum(input_line[temp])) break;
                         temp++;
                     } else if (adjustedPattern[j] == '[') {
                         // Handle character groups
@@ -118,10 +120,10 @@ bool match(const std::string& input_line, const std::string& pattern) {
 }
 
 // Function to match patterns with special cases and regex support
-bool match_pattern(const std::string& input_line, const std::string& pattern) {
+bool match_pattern(const string& input_line, const string& pattern) {
     if (pattern.length() == 1) {
         // Handle single character pattern
-        return input_line.find(pattern) != std::string::npos;
+        return input_line.find(pattern) != string::npos;
     } else if (pattern == "\\d") {
         // Handle digit pattern
         return matchdigit(input_line);
@@ -138,9 +140,9 @@ bool match_pattern(const std::string& input_line, const std::string& pattern) {
     } else {
         // Handle complex patterns using regex
         try {
-            std::regex regex(pattern);
-            return std::regex_search(input_line, regex);
-        } catch (const std::regex_error&) {
+            regex regex_pattern(pattern);
+            return regex_search(input_line, regex_pattern);
+        } catch (const regex_error&) {
             return false; // Invalid regex pattern
         }
     }
@@ -149,22 +151,22 @@ bool match_pattern(const std::string& input_line, const std::string& pattern) {
 // Main function to handle command-line arguments and pattern matching
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        std::cerr << "Expected two arguments" << std::endl;
+        cerr << "Expected two arguments" << endl;
         return 1;
     }
     
-    std::string flag = argv[1];
-    std::string pattern = argv[2];
+    string flag = argv[1];
+    string pattern = argv[2];
     
     // Check if the first argument is '-E'
     if (flag != "-E") {
-        std::cerr << "Expected first argument to be '-E'" << std::endl;
+        cerr << "Expected first argument to be '-E'" << endl;
         return 1;
     }
 
     // Read input line from standard input
-    std::string input_line;
-    std::getline(std::cin, input_line);
+    string input_line;
+    getline(cin, input_line);
 
     // Match the pattern against the input line and return appropriate exit code
     if (match_pattern(input_line, pattern)) {
