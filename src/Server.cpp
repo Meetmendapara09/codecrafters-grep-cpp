@@ -21,32 +21,55 @@ bool match_char_class(char ch, const std::string& char_class) {
     return false;
 }
 
-// Function to match the input line against a pattern
+// Function to match the input line against a combined pattern
 bool match_pattern(const std::string& input_line, const std::string& pattern) {
-    std::istringstream pattern_stream(pattern);
-    std::string component;
-    size_t pos = 0;
-    
-    while (pattern_stream >> component) {
-        if (component == "\\d" || component == "\\w" ||
-            (component.length() > 2 && component[0] == '[' && component.back() == ']')) {
+    size_t input_len = input_line.size();
+    size_t pattern_len = pattern.size();
+    size_t input_pos = 0;
+    size_t pattern_pos = 0;
+
+    while (pattern_pos < pattern_len) {
+        if (pattern[pattern_pos] == '\\' && (pattern_pos + 1 < pattern_len)) {
+            std::string char_class;
+            if (pattern[pattern_pos + 1] == 'd') {
+                char_class = "\\d";
+            } else if (pattern[pattern_pos + 1] == 'w') {
+                char_class = "\\w";
+            } else {
+                // Handle error or unsupported character class
+                return false;
+            }
             // Match character class
-            if (pos >= input_line.size() || !match_char_class(input_line[pos], component)) {
+            if (input_pos >= input_len || !match_char_class(input_line[input_pos], char_class)) {
                 return false;
             }
-            ++pos;
+            ++input_pos;
+            pattern_pos += 2; // Skip the class characters
+        } else if (pattern[pattern_pos] == '[') {
+            // Handle character groups (positive or negative)
+            size_t end_pos = pattern.find(']', pattern_pos);
+            if (end_pos == std::string::npos) {
+                // Error: unmatched '['
+                return false;
+            }
+            std::string char_class = pattern.substr(pattern_pos, end_pos - pattern_pos + 1);
+            if (input_pos >= input_len || !match_char_class(input_line[input_pos], char_class)) {
+                return false;
+            }
+            ++input_pos;
+            pattern_pos = end_pos + 1;
         } else {
-            // Match literal string
-            size_t match_length = component.length();
-            if (input_line.substr(pos, match_length) != component) {
+            // Match literal character
+            if (input_pos >= input_len || input_line[input_pos] != pattern[pattern_pos]) {
                 return false;
             }
-            pos += match_length;
+            ++input_pos;
+            ++pattern_pos;
         }
     }
-    
-    // Ensure the whole input line was matched
-    return pos == input_line.size();
+
+    // Ensure the entire input line is consumed
+    return input_pos == input_len;
 }
 
 int main(int argc, char* argv[]) {
