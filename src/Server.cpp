@@ -11,19 +11,23 @@ bool match_group(const std::string& regex, const std::string& text);
 bool match_here(const std::string& regex, const std::string& text);
 bool match_one_or_more(const std::string& regex, const std::string& text);
 
+// Function to match a single digit
 bool match_digit(char c) {
     return std::isdigit(c);
 }
 
+// Function to match a single alphanumeric character
 bool match_alphanumeric(char c) {
     return std::isalnum(c);
 }
 
+// Function to check if a character is in a set
 bool match_set(char c, const std::string& set, bool negate) {
     bool found = set.find(c) != std::string::npos;
     return negate ? !found : found;
 }
 
+// Function to match a character group (e.g., [a-z])
 bool match_group(const std::string& regex, const std::string& text) {
     if (text.empty()) return false;
 
@@ -40,32 +44,41 @@ bool match_group(const std::string& regex, const std::string& text) {
     return false;
 }
 
+// Function to match one or more occurrences of a pattern
 bool match_one_or_more(const std::string& regex, const std::string& text) {
-    // Match the pattern one or more times
-    for (size_t i = 1; i <= text.size(); ++i) {
+    if (text.empty()) return false;
+
+    // Try matching the pattern one or more times
+    size_t i = 1;
+    while (i <= text.size()) {
         if (match_here(regex, text.substr(i))) {
             return true;
         }
+        i++;
     }
     return false;
 }
 
+// Function to match the pattern against the text
 bool match_here(const std::string& regex, const std::string& text) {
     if (regex.empty()) return true;
 
+    // Match start of string
     if (regex[0] == '^') {
         return match_here(regex.substr(1), text);
     }
 
+    // Match end of string
     if (regex[regex.size() - 1] == '$') {
         return match_here(regex.substr(0, regex.size() - 1), text.substr(text.size() - regex.size() + 1));
     }
 
-    // Check for quantifier '+'
+    // Match one or more occurrences of a pattern
     if (regex.size() > 1 && regex[1] == '+') {
         return match_one_or_more(regex.substr(0, 1), text);
     }
 
+    // Check for other characters and patterns
     for (size_t i = 0; i < text.size(); ++i) {
         if (regex[0] == text[i] && match_here(regex.substr(1), text.substr(i + 1))) {
             return true;
@@ -90,6 +103,7 @@ bool match_here(const std::string& regex, const std::string& text) {
     return false;
 }
 
+// Function to match the pattern against the input line
 bool match_pattern(const std::string& input_line, const std::string& pattern) {
     return match_here(pattern, input_line);
 }
