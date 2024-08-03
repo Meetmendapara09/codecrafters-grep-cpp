@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cctype>
-#include <sstream>
+#include <stdexcept>
 
 // Function to check if a character matches a character class
 bool match_char_class(char ch, const std::string& char_class) {
@@ -33,9 +33,9 @@ bool match_pattern(const std::string& input_line, const std::string& pattern) {
         if (pattern[pattern_pos] == '\\') {
             // Handle escaped characters
             if (pattern_pos + 1 < pattern_len) {
-                char next_char = pattern[pattern_pos + 1];
                 std::string char_class;
-
+                char next_char = pattern[pattern_pos + 1];
+                
                 if (next_char == 'd') {
                     char_class = "\\d";
                 } else if (next_char == 'w') {
@@ -82,7 +82,6 @@ bool match_pattern(const std::string& input_line, const std::string& pattern) {
 }
 
 int main(int argc, char* argv[]) {
-    // Flush after every std::cout / std::cerr
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
 
