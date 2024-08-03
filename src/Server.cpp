@@ -1,11 +1,22 @@
 #include <iostream>
 #include <string>
+#include <cctype> // For std::isalnum
 
 bool match_pattern(const std::string& input_line, const std::string& pattern) {
-    if (pattern.length() == 1) {
+    if (pattern == "\\w") {
+        // Check for any alphanumeric character or underscore
+        for (char ch : input_line) {
+            if (std::isalnum(ch) || ch == '_') {
+                return true;
+            }
+        }
+        return false;
+    } else if (pattern.length() == 1) {
+        // Handle single-character patterns
         return input_line.find(pattern) != std::string::npos;
     } else if (pattern == "\\d") {
-        return input_line.find_first_of("123456890") != std::string::npos;
+        // Handle digit pattern
+        return input_line.find_first_of("0123456789") != std::string::npos;
     } else {
         throw std::runtime_error("Unhandled pattern " + pattern);
     }
@@ -15,7 +26,6 @@ int main(int argc, char* argv[]) {
     // Flush after every std::cout / std::cerr
     std::cout << std::unitbuf;
     std::cerr << std::unitbuf;
-
 
     if (argc != 3) {
         std::cerr << "Expected two arguments" << std::endl;
@@ -30,8 +40,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Uncomment this block to pass the first stage
-    
     std::string input_line;
     std::getline(std::cin, input_line);
     
