@@ -3,22 +3,22 @@
 #include <stack>
 #include <algorithm>
 
+// Helper functions to match digits and alphanumeric characters
 bool matchdigit(const std::string& input_line) {
-    int length = input_line.size();
-    for (int i = 0; i < length; i++) {
-        if (std::isdigit(input_line[i])) return true;
+    for (char c : input_line) {
+        if (std::isdigit(c)) return true;
     }
     return false;
 }
 
 bool matchalphanumeric(const std::string& input_line) {
-    int length = input_line.size();
-    for (int i = 0; i < length; i++) {
-        if (std::isalnum(input_line[i])) return true;
+    for (char c : input_line) {
+        if (std::isalnum(c)) return true;
     }
     return false;
 }
 
+// Helper functions for character groups in patterns
 bool positiveMatchGroup(const std::string& input_line, const std::string& pattern, int start, int end) {
     std::stack<char> s;
     std::stack<std::pair<char, char>> s_pair;
@@ -83,58 +83,37 @@ bool negativeMatchGroup(const std::string& input_line, const std::string& patter
     return true;
 }
 
+// Match function for patterns
 bool match(const std::string& input_line, const std::string& pattern) {
     int i = 0;
-    bool startAnchor = false;
-    bool endAnchor = false;
-
-    if (pattern[0] == '^') {
-        startAnchor = true;
-    }
-    if (pattern[pattern.size() - 1] == '$') {
-        endAnchor = true;
-    }
+    bool startAnchor = (pattern[0] == '^');
+    bool endAnchor = (pattern[pattern.size() - 1] == '$');
+    if (startAnchor) pattern = pattern.substr(1);
+    if (endAnchor) pattern = pattern.substr(0, pattern.size() - 1);
 
     while (i < input_line.size()) {
         int j = 0;
-
-        if (startAnchor) {
-            j++;
-        }
-
-        if (endAnchor) {
-            if (input_line.size() < pattern.size() - 1) return false;
-            else {
-                i = input_line.size() - (pattern.size() - 1);
-            }
-        }
-
         int temp = i;
+
         while (j < pattern.size() && temp < input_line.size()) {
             if (pattern[j] == '\\') {
                 j++;
                 if (j < pattern.size()) {
                     if (pattern[j] == 'd') {
-                        if (!isdigit(input_line[temp])) {
-                            break;
-                        } else {
-                            temp++;
-                        }
+                        if (!isdigit(input_line[temp])) break;
+                        temp++;
                     } else if (pattern[j] == 'w') {
-                        if (!isalnum(input_line[temp])) {
-                            break;
-                        } else {
-                            temp++;
-                        }
+                        if (!isalnum(input_line[temp])) break;
+                        temp++;
                     } else if (pattern[j] == '[') {
                         int start = j;
-                        while (j < pattern.size()) {
-                            if (pattern[j] != ']') j++;
-                        }
-                        if (pattern[j] == '^') {
-                            return negativeMatchGroup(input_line, pattern, start, j + 1);
-                        } else {
-                            return positiveMatchGroup(input_line, pattern, start, j + 1);
+                        while (j < pattern.size() && pattern[j] != ']') j++;
+                        if (j < pattern.size() && pattern[j] == ']') {
+                            if (pattern[start + 1] == '^') {
+                                return negativeMatchGroup(input_line, pattern, start, j + 1);
+                            } else {
+                                return positiveMatchGroup(input_line, pattern, start, j + 1);
+                            }
                         }
                     }
                 } else {
@@ -146,37 +125,30 @@ bool match(const std::string& input_line, const std::string& pattern) {
                     temp++;
                 }
             } else if (pattern[j] == '?') {
-                // Handle the optional quantifier
-                if (j > 0 && j < pattern.size() - 1) {
+                if (j > 0 && temp < input_line.size()) {
                     char prevChar = pattern[j - 1];
-                    if (prevChar == input_line[temp] || prevChar == '.' || prevChar == '\\') {
-                        // Check if we match with or without the previous character
-                        if (match(input_line.substr(temp), pattern.substr(j + 1))) return true;
-                        if (input_line[temp] == prevChar) return match(input_line.substr(temp + 1), pattern.substr(j + 1));
+                    if (input_line[temp] == prevChar || prevChar == '.') {
+                        if (match(input_line.substr(temp + 1), pattern.substr(j + 1))) return true;
                     }
+                    if (match(input_line.substr(temp), pattern.substr(j + 1))) return true;
                 }
                 j++;
             } else {
-                if (input_line[temp] != pattern[j]) {
-                    break;
-                } else {
-                    temp++;
-                }
+                if (input_line[temp] != pattern[j]) break;
+                temp++;
             }
             j++;
         }
         if (j == pattern.size()) return true;
         if (startAnchor && j != pattern.size()) return false;
-        if (endAnchor) {
-            if (j == pattern.size() - 1) return true;
-            return false;
-        }
+        if (endAnchor && j != pattern.size() - 1) return false;
         i++;
     }
 
     return false;
 }
 
+// Function to match patterns with different special cases
 bool match_pattern(const std::string& input_line, const std::string& pattern) {
     if (pattern.length() == 1) {
         return input_line.find(pattern) != std::string::npos;
@@ -195,16 +167,12 @@ bool match_pattern(const std::string& input_line, const std::string& pattern) {
         } else {
             return positiveMatchGroup(input_line, pattern, 0, pattern.size());
         }
-    } else if (pattern.length() > 1) {
-        return match(input_line, pattern);
     } else {
-        throw std::runtime_error("Unhandled pattern " + pattern);
+        return match(input_line, pattern);
     }
 }
 
 int main(int argc, char* argv[]) {
-    // You can use print statements as follows for debugging, they'll be visible when running tests.
-    std::cout << "Logs from your program will appear here" << std::endl;
     if (argc != 3) {
         std::cerr << "Expected two arguments" << std::endl;
         return 1;
