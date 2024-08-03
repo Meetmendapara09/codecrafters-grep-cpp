@@ -15,14 +15,27 @@ bool match_pattern(const std::string& input_line, const std::string& pattern) {
         // Handle digit pattern
         return input_line.find_first_of("0123456789") != std::string::npos;
     } else if (pattern.length() > 2 && pattern[0] == '[' && pattern.back() == ']') {
-        // Handle positive character groups
+        // Handle positive and negative character groups
         std::string chars_to_match = pattern.substr(1, pattern.length() - 2); // Remove the square brackets
-        for (char ch : input_line) {
-            if (chars_to_match.find(ch) != std::string::npos) {
-                return true;
+        
+        if (!chars_to_match.empty() && chars_to_match[0] == '^') {
+            // Negative character group
+            chars_to_match.erase(0, 1); // Remove the '^' from the beginning
+            for (char ch : input_line) {
+                if (chars_to_match.find(ch) == std::string::npos) {
+                    return true; // Found a character not in the negative group
+                }
             }
+            return false;
+        } else {
+            // Positive character group
+            for (char ch : input_line) {
+                if (chars_to_match.find(ch) != std::string::npos) {
+                    return true;
+                }
+            }
+            return false;
         }
-        return false;
     } else if (pattern.length() == 1) {
         // Handle single-character patterns
         return input_line.find(pattern) != std::string::npos;
