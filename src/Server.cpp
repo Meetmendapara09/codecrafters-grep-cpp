@@ -24,7 +24,7 @@ bool negativeMatchGroup(const string& input_line, const string& pattern, int sta
     for (char ch : chars) {
         if (input_line.find(ch) != string::npos) {
             return false; // Found a character that should be excluded
-        }
+        }   
     }
     return true; // None of the characters were found in the input line
 }
